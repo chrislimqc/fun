@@ -138,7 +138,7 @@ const CanvasComponent = () => {
             drawAvatar();
             showStats();
             requestAnimationFrame(animate);
-            ctx.fillText(`CHRIS's WORLD (work in progress)`, 400, 400);
+            ctx.fillText(`CHRIS's WORLD (work in progress scroller)`, 400, 400);
         }
 
         function handleKeyDown(event) {
