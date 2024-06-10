@@ -1,0 +1,13 @@
+/* Reset padding and margin for body */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Optional: to prevent scrolling */
+  }
+  
+  /* Ensure canvas takes up the full screen */
+  canvas {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
