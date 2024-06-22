@@ -1,0 +1,19 @@
+So the plan is to have the root component be CanvasComponent. 
+Much like the game animal well and old monster hunter,
+I will do away with scrolling map and just have the change at boundaries
+I starting with the main page it should have 3-4 doors to go to different pages
+Door list:
+    Web Dev projects
+    School projects
+    Data Analytics projects
+    About me
+
+Doors can also be clicked on if user is lazy to play the game
+AND map should fit in square for mobile use
+As of (22/06/24) there are 0 doors and 0 links
+
+PRIORITY 
+abstract avatar and update components so i can start making seperate pages/maps
+
+I need constants for platforms, doors and avatars
+I need constants for 
