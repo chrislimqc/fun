@@ -24,7 +24,7 @@ const CanvasComponent = () => {
         // create avatar
 
         let avatar = {
-            x: 100,
+            x: (canvas.width)/2 - 50,
             y: canvas.height - 100,
             width: 50,
             height: 50,
@@ -41,6 +41,15 @@ const CanvasComponent = () => {
             jumpDelay: false
         };
 
+        let screen = {
+
+            origin: window.innerWidth + 100,
+            color: 'yellow',
+            x : 0,
+            moveScreenRight : false,
+            moveScreenLeft : false,
+            moveSpeed : 0
+        }
 
         let keys = {
             'ArrowRight' : "Up",
@@ -66,21 +75,17 @@ const CanvasComponent = () => {
                     avatar.isJumping = true;
                     avatar.dy = avatar.jumpStrength;
                     avatar.jumpDelay = true; // Start delay for double jump
-                    setTimeout(() => avatar.jumpDelay = false, 100); // 300ms delay
+                    setTimeout(() => avatar.jumpDelay = false, 200); // 300ms delay
                 } else if (avatar.isJumping && !avatar.doubleJumped && !avatar.jumpDelay) {
                     avatar.isJumping = true;
                     avatar.doubleJumped = true;
                     avatar.dy = avatar.jumpStrength;
                     avatar.jumpDelay = true; // Start delay for double jump
-                    setTimeout(() => avatar.jumpDelay = false, 100); // 300ms delay
+                    setTimeout(() => avatar.jumpDelay = false, 200); // 300ms delay
                 }
             } 
         }
 
-        function drawAvatar() {
-            ctx.fillStyle = avatar.color;
-            ctx.fillRect(avatar.x, avatar.y, avatar.width, avatar.height);
-        }
 
         function updateAvatar() {
             // Update horizontal movement
@@ -111,6 +116,45 @@ const CanvasComponent = () => {
             if (avatar.x + avatar.width > canvas.width) avatar.x = canvas.width - avatar.width;
         }
 
+        
+        function checkAvatarPosition() {
+            if (avatar.x > (window.innerWidth/2)) {
+                screen.moveScreenRight = true
+            } else {
+                screen.moveScreenRight = false
+            }
+            
+            if (avatar.x < 100) {
+                screen.moveScreenLeft = true
+            } else {
+                screen.moveScreenLeft = false
+            }
+        }
+
+        function updateScreen() {
+            if (screen.moveScreenRight) {
+                screen.moveSpeed = -avatar.dx
+                screen.x += screen.moveSpeed
+            }
+
+            if (screen.moveScreenLeft) {
+                screen.moveSpeed = -avatar.dx
+                screen.x += screen.moveSpeed
+            }
+        }
+
+        function drawScreen() {
+            ctx.fillStyle = 'yellow'
+            ctx.fillRect(screen.x, window.innerHeight/2, 1300, 300)
+        }
+        
+        function drawAvatar() {
+            ctx.fillStyle = avatar.color;
+            ctx.fillRect(avatar.x, avatar.y, avatar.width, avatar.height);
+        }
+
+        
+
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
@@ -135,6 +179,9 @@ const CanvasComponent = () => {
             drawPlatform();
             checkKeys();
             updateAvatar();
+            checkAvatarPosition();
+            updateScreen();
+            drawScreen();
             drawAvatar();
             showStats();
             requestAnimationFrame(animate);
