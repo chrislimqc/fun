@@ -1,5 +1,6 @@
 
 import CanvasComponent from "./CanvasComponent.jsx";
+import NewCanvas from "./NewCanvas.jsx";
 
 function App() {
 

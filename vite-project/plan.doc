@@ -16,4 +16,14 @@ PRIORITY
 abstract avatar and update components so i can start making seperate pages/maps
 
 I need constants for platforms, doors and avatars
-I need constants for 
+I need functions for:
+                1. checking button press
+                2. calculating new position
+                3. checking collision:
+                                    1. avatar and platform
+                                    2. avatar and door
+                                    3. avatar and boundary
+                5. Update display which requires:
+                                            1. updating avatar position
+                                            2. update map
+                    

@@ -1,4 +1,13 @@
 import React, { useRef, useEffect } from 'react';
+import { createAvatar, checkKeys, updateAvatarValues, checkAvatarCollision } from './avatar';
+import { resizeCanvas, drawPlatform, clearCanvas, showStats, drawAvatar, drawPlatforms, platformList } from './canvasUtils';
+import { handleKeyDown, handleKeyUp, keys } from './handleInput';
+
+
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+const sleep10 = async () => {
+    sleep(10)
+}
 
 const CanvasComponent = () => {
     const canvasRef = useRef(null);
@@ -7,220 +16,56 @@ const CanvasComponent = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            drawPlatform(); // Redraw the platform after resizing
-        }
-
-        //draw floor 
-
-        function drawPlatform() {
-            ctx.fillStyle = 'darkblue';
-            ctx.fillRect(0, canvas.height - 50, canvas.width, 50); // Draw a rectangle across the bottom of the canvas
-        }
-
-
         // create avatar
+        const avatar = createAvatar(canvas)
 
-        let avatar = {
-            x: (canvas.width)/2 - 50,
-            y: canvas.height - 100,
-            width: 50,
-            height: 50,
-            color: 'red',
-            dx: 0,
-            dy: 0,
-            ax: 0,
-            ay: 1,
-            maxSpeed: 10000,
-            friction: 0.92,
-            jumpStrength: -15,
-            isJumping: false,
-            doubleJumped: false,
-            jumpDelay: false
-        };
+        let lastTime = performance.now();
+        let fps = 0;
+        let frameCount = 0;
 
-        let screen = {
-
-            origin: window.innerWidth + 100,
-            color: 'yellow',
-            x : 0,
-            moveScreenRight : false,
-            moveScreenLeft : false,
-            moveSpeed : 0
-        }
-
-        let keys = {
-            'ArrowRight' : "Up",
-            'ArrowLeft' : "Up",
-            'ArrowUp' : "Up",
-            'Space' : "Up"
-
-        }
-
-        function checkKeys() {
-            if (keys.ArrowLeft == "Down" && keys.ArrowRight == "Down") {
-                avatar.ax = 0
-            } else if (keys.ArrowLeft == "Down") {
-                avatar.ax = -1
-            } else if (keys.ArrowRight == "Down") {
-                avatar.ax = 1
-            } else if (keys.ArrowLeft == "Up" && keys.ArrowRight == "Up") {
-                avatar.ax = 0
-            }
-
-            if (keys.ArrowUp == "Down") {
-                if (!avatar.isJumping) {
-                    avatar.isJumping = true;
-                    avatar.dy = avatar.jumpStrength;
-                    avatar.jumpDelay = true; // Start delay for double jump
-                    setTimeout(() => avatar.jumpDelay = false, 200); // 300ms delay
-                } else if (avatar.isJumping && !avatar.doubleJumped && !avatar.jumpDelay) {
-                    avatar.isJumping = true;
-                    avatar.doubleJumped = true;
-                    avatar.dy = avatar.jumpStrength;
-                    avatar.jumpDelay = true; // Start delay for double jump
-                    setTimeout(() => avatar.jumpDelay = false, 200); // 300ms delay
-                }
-            } 
-        }
-
-
-        function updateAvatar() {
-            // Update horizontal movement
-            avatar.dx += avatar.ax;
-            avatar.dx *= avatar.friction; // Apply friction
-
-            // // Cap the speed to maxSpeed
-            // if (avatar.dx > avatar.maxSpeed) avatar.dx = avatar.maxSpeed;
-            // if (avatar.dx < -avatar.maxSpeed) avatar.dx = -avatar.maxSpeed;
-
-            avatar.x += avatar.dx;
-
-            // Update vertical movement
-            if (avatar.isJumping) {
-                avatar.dy += avatar.ay;
-                avatar.y += avatar.dy;
-                if (avatar.y + avatar.height >= canvas.height - 50) {
-                    avatar.y = canvas.height - 50 - avatar.height;
-                    avatar.dy = 0;
-                    avatar.isJumping = false;
-                    avatar.doubleJumped = false;
-                    avatar.jumpDelay = false;
-                }
-            }
-
-            // Prevent avatar from going out of bounds
-            if (avatar.x < 0) avatar.x = 0;
-            if (avatar.x + avatar.width > canvas.width) avatar.x = canvas.width - avatar.width;
-        }
-
-        
-        function checkAvatarPosition() {
-            if (avatar.x > (window.innerWidth/2)) {
-                screen.moveScreenRight = true
-            } else {
-                screen.moveScreenRight = false
-            }
-            
-            if (avatar.x < 100) {
-                screen.moveScreenLeft = true
-            } else {
-                screen.moveScreenLeft = false
-            }
-        }
-
-        function updateScreen() {
-            if (screen.moveScreenRight) {
-                screen.moveSpeed = -avatar.dx
-                screen.x += screen.moveSpeed
-            }
-
-            if (screen.moveScreenLeft) {
-                screen.moveSpeed = -avatar.dx
-                screen.x += screen.moveSpeed
-            }
-        }
-
-        function drawScreen() {
-            ctx.fillStyle = 'yellow'
-            ctx.fillRect(screen.x, window.innerHeight/2, 1300, 300)
-        }
-        
-        function drawAvatar() {
-            ctx.fillStyle = avatar.color;
-            ctx.fillRect(avatar.x, avatar.y, avatar.width, avatar.height);
-        }
-
-        
-
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function showStats() {
-            ctx.font = "20px Arial";
-            ctx.fillStyle = "black";
-            ctx.fillText(`Position: (${Math.round(avatar.x)}, ${Math.round(avatar.y)})`, 10, 30);
-            ctx.fillText(`Velocity: (${Math.round(avatar.dx)}, ${Math.round(avatar.dy)})`, 10, 60);
-            ctx.fillText(`Acceleration: (${avatar.ax}, ${avatar.ay})`, 10, 90);
-            ctx.fillText(`Jumping: ${avatar.isJumping}`, 10, 120);
-            ctx.fillText(`DoubleJumped: ${avatar.doubleJumped}`, 10, 150);
-            ctx.fillText(`JumpDelay: ${avatar.jumpDelay}`, 10, 180);
-            ctx.fillText(`Leftkey: ${keys.ArrowLeft}`, 10, 210);
-            ctx.fillText(`Rightkey: ${keys.ArrowRight}`, 10, 240);
-            ctx.fillText(`Upkey: ${keys.ArrowUp}`, 10, 270);
-            
-        }
 
         function animate() {
-            clearCanvas();
-            drawPlatform();
-            checkKeys();
-            updateAvatar();
-            checkAvatarPosition();
-            updateScreen();
-            drawScreen();
-            drawAvatar();
-            showStats();
+
+            frameCount += 1;
+            const currentTime = performance.now();
+            const elapsedTime = currentTime - lastTime;
+            if (elapsedTime >= 1000) {
+                fps = frameCount / (elapsedTime / 1000);
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+        
+
+            clearCanvas(ctx, canvas);
+            resizeCanvas(canvas, window)
+            drawPlatforms(ctx, platformList, canvas);   
+            drawPlatform(ctx,0,canvas.height-50,canvas.width, 50, "darkblue");
+            checkKeys(avatar, keys);
+            checkAvatarCollision(avatar, ctx);
+            updateAvatarValues(avatar,ctx);
+            showStats(ctx, avatar, keys, fps)
+            drawAvatar(ctx, avatar);
+            ctx.fillText(`CHRIS's WORLD (work in progress platformer)`, 400, 400);
             requestAnimationFrame(animate);
-            ctx.fillText(`CHRIS's WORLD (work in progress scroller)`, 400, 400);
+            sleep10()
+
         }
 
-        function handleKeyDown(event) {
-            if (event.code === 'ArrowRight') {
-                keys.ArrowRight = "Down"
-            } else if (event.code === 'ArrowLeft') {
-                keys.ArrowLeft = "Down"
-            } else if (event.code === 'ArrowUp') {
-                keys.ArrowUp = "Down"
-            }
-        }
+        const resizeCanvasEvent = () => resizeCanvas(canvas,window)
+        const handleKeyDownEvent = (event) => handleKeyDown(event, keys);
+        const handleKeyUpEvent = (event) => handleKeyUp(event, keys);
 
-        function handleKeyUp(event) {
-            if (event.code === 'ArrowRight') {
-                keys.ArrowRight = "Up"
-            } else if (event.code === 'ArrowLeft') {
-                keys.ArrowLeft = "Up"
-            } else if (event.code === 'ArrowUp') {
-                keys.ArrowUp = "Up"
-            }
-        }
+        window.addEventListener('resize', resizeCanvasEvent);
+        window.addEventListener('keydown', handleKeyDownEvent);
+        window.addEventListener('keyup', handleKeyUpEvent);
 
-
-
-
-        window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-
-        resizeCanvas()
         animate()
 
         // Cleanup event listener on component unmount
         return () => {
-            canvas.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('resize', resizeCanvasEvent);
+            window.removeEventListener('keydown', handleKeyDownEvent);
+            window.removeEventListener('keyup', handleKeyUpEvent);
         };
     }, []);
 
