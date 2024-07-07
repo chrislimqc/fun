@@ -1,29 +1,45 @@
 //platform list is a list of coordinates, width and heights of rectangles to be drawn
-export const platformList = [
+export const platformList = 
+// [
+//     {
+//         "x": 0.2,
+//         "y": 0.1,
+//         "height": 0.1,
+//         "width": 0.5,
+//         "color": "yellow"
+//     }
+// ]
+[
     {
         "x": 0.8,
-        "y": 200,
-        "height": 200,
-        "width": 100,
+        "y": 0,
+        "height": 0.4,
+        "width": 0.05,
         "color": "yellow"
     },
     {
         "x": 0.2,
-        "y": 200,
-        "height": 200,
-        "width": 100,
+        "y": 0,
+        "height": 0.4,
+        "width": 0.05,
         "color": "yellow"
     },
-
     {
-        "x": 0.55,
-        "y": 200,
-        "height": 200,
-        "width": 40,
-        "color": "orange"
+        "x": 0,
+        "y": 0,
+        "height": 0.1,
+        "width": 0.5,
+        "color": "darkblue"
+    },
+    {
+        "x": 0.3,
+        "y": 0.5,
+        "height": 0.06,
+        "width": 0.2,
+        "color": "pink"
     }
-
 ]
+
 
 
 export const resizeCanvas = (canvas, window) => {
@@ -36,12 +52,16 @@ export const drawPlatform = (ctx, x,y,width,height, color) => {
     ctx.fillRect(x, y, width, height); // Draw a rectangle across the bottom of the canvas
 }
 
-export const drawPlatforms = (ctx, listOfPlatform, canvas, boundaries) => {
+export const drawPlatforms = (ctx, listOfPlatform, canvas) => {
     listOfPlatform.forEach(platform => {
-        drawPlatform(ctx, platform.x*canvas.width, canvas.height - platform.y, platform.width, platform.height, platform.color);
+        drawPlatform(ctx, platform.x*canvas.width, (1-platform.y-platform.height)*(canvas.height), platform.width*canvas.width, platform.height*canvas.height, platform.color);
     });
 };
 
+
+export const clearAvatar = (ctx, avatar) => {
+    ctx.clearRect(avatar.x, avatar.y, avatar.width, avatar.height);
+}
 
 export const clearCanvas = (ctx, canvas) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -61,11 +81,16 @@ export const showStats = (ctx, avatar, keys, framerate) => {
     ctx.fillText(`Rightkey: ${keys.ArrowRight}`, 10, 270);
     ctx.fillText(`Upkey: ${keys.ArrowUp}`, 10, 300);
     ctx.fillText(`framerate: ${framerate}`, 10, 330);
-    ctx.fillText(`BL: ${avatar.BLy}`, 10, 360);
-    ctx.fillText(`BR: ${avatar.BRy}`, 10, 390);
-    ctx.fillText(`TL: ${avatar.TLy}`, 10, 420);
-    ctx.fillText(`TR: ${avatar.TRy}`, 10, 450);
-    ctx.fillText(`BM: ${avatar.BM}`, 10, 480);
+    ctx.fillText(`TLx: ${avatar.TLx}`, 10, 360);
+    ctx.fillText(`TRx: ${avatar.TRx}`, 10, 390);
+    ctx.fillText(`BLx: ${avatar.BLx}`, 10, 420);
+    ctx.fillText(`BRx: ${avatar.BRx}`, 10, 450);
+    ctx.fillText(`TLy: ${avatar.TLy}`, 10, 480);
+    ctx.fillText(`TRy: ${avatar.TRy}`, 10, 510);
+    ctx.fillText(`BLy: ${avatar.BLy}`, 10, 540);
+    ctx.fillText(`BRy: ${avatar.BRy}`, 10, 570);
+    ctx.fillText(`BMy: ${avatar.BMy}`, 10, 600);
+
 }
 
 export const drawAvatar = (ctx, avatar) => {
@@ -80,39 +105,41 @@ export const drawAvatar = (ctx, avatar) => {
     ctx.fillStyle = avatar.color;
     ctx.fillRect(avatar.x, avatar.y, avatar.width, avatar.height);
 
+    ctx.fillStyle = "purple";
+    //TLx
+    ctx.moveTo(x-4 , y+5); // Move to the first circle's position
+    ctx.arc(x-4 , y+5, 2, 0, 2 * Math.PI);
+    //TRx
+    ctx.moveTo(x+4 + avatar.width, y+5); // Move to the second circle's position
+    ctx.arc(x+4 + avatar.width, y+5, 2, 0, 2 * Math.PI);
+    //BLx
+    ctx.moveTo(x-4, y + avatar.height-5); // Move to the third circle's position
+    ctx.arc(x-4, y + avatar.height-5, 2, 0, 2 * Math.PI);
+    //BRx
+    ctx.moveTo(x+4 + avatar.width, y + avatar.height-5); // Move to the fourth circle's position
+    ctx.arc(x+4 + avatar.width, y + avatar.height-5, 2, 0, 2 * Math.PI);
+    // Fill the shapes
+    ctx.fill();
+
     // Draw the four green circles
     ctx.fillStyle = "green";
-    ctx.moveTo(x+dx , y+dy-5); // Move to the first circle's position
-    ctx.arc(x+dx , y+dy-5, 2, 0, 2 * Math.PI);
-
-    ctx.moveTo(x+dx + avatar.width, y+dy-5); // Move to the second circle's position
-    ctx.arc(x+dx + avatar.width, y+dy-5, 2, 0, 2 * Math.PI);
-
-    ctx.moveTo(x+dx, y + avatar.height+dy+5); // Move to the third circle's position
-    ctx.arc(x+dx, y + avatar.height+dy+5, 2, 0, 2 * Math.PI);
-
-    ctx.moveTo(x+dx + avatar.width, y + avatar.height+dy+5); // Move to the fourth circle's position
-    ctx.arc(x+dx + avatar.width, y + avatar.height+dy+5, 2, 0, 2 * Math.PI);
-
+    //TLy
+    ctx.moveTo(x , y-5); // Move to the first circle's position
+    ctx.arc(x , y-5, 2, 0, 2 * Math.PI);
+    //TRy
+    ctx.moveTo(x + avatar.width, y-5); // Move to the second circle's position
+    ctx.arc(x + avatar.width, y-5, 2, 0, 2 * Math.PI);
+    //BLy
+    ctx.moveTo(x, y + avatar.height+5); // Move to the third circle's position
+    ctx.arc(x, y + avatar.height+5, 2, 0, 2 * Math.PI);
+    //BRy
+    ctx.moveTo(x + avatar.width, y + avatar.height+5); // Move to the fourth circle's position
+    ctx.arc(x + avatar.width, y + avatar.height+5, 2, 0, 2 * Math.PI);
+    //BMy
     ctx.moveTo(avatar.x + (avatar.width/2), avatar.y + avatar.height); // Move to the fourth circle's position
     ctx.arc(avatar.x + (avatar.width/2), avatar.y + avatar.height, 2, 0, 2 * Math.PI);
 
-    // Fill the shapes
     ctx.fill();
 
-    ctx.fillStyle = "purple";
-    ctx.moveTo(x+dx , y+dy); // Move to the first circle's position
-    ctx.arc(x+dx , y+dy, 2, 0, 2 * Math.PI);
-
-    ctx.moveTo(x+dx + avatar.width, y+dy); // Move to the second circle's position
-    ctx.arc(x+dx + avatar.width, y+dy, 2, 0, 2 * Math.PI);
-
-    ctx.moveTo(x+dx, y + avatar.height+dy); // Move to the third circle's position
-    ctx.arc(x+dx, y + avatar.height+dy, 2, 0, 2 * Math.PI);
-
-    ctx.moveTo(x+dx + avatar.width, y + avatar.height+dy); // Move to the fourth circle's position
-    ctx.arc(x+dx + avatar.width, y + avatar.height+dy, 2, 0, 2 * Math.PI);
-    // Fill the shapes
-    ctx.fill();
     ctx.closePath();
 };

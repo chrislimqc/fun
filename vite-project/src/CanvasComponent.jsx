@@ -1,13 +1,8 @@
 import React, { useRef, useEffect } from 'react';
-import { createAvatar, checkKeys, updateAvatarValues, checkAvatarCollision } from './avatar';
+import { createAvatar, checkKeys, updateAvatarValues, checkAvatarCollision, resizeAvatar } from './avatar';
 import { resizeCanvas, drawPlatform, clearCanvas, showStats, drawAvatar, drawPlatforms, platformList } from './canvasUtils';
 import { handleKeyDown, handleKeyUp, keys } from './handleInput';
 
-
-const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
-const sleep10 = async () => {
-    sleep(10)
-}
 
 const CanvasComponent = () => {
     const canvasRef = useRef(null);
@@ -17,7 +12,7 @@ const CanvasComponent = () => {
         const ctx = canvas.getContext('2d');
 
         // create avatar
-        const avatar = createAvatar(canvas)
+        var avatar = createAvatar(canvas)
 
         let lastTime = performance.now();
         let fps = 0;
@@ -34,24 +29,23 @@ const CanvasComponent = () => {
                 frameCount = 0;
                 lastTime = currentTime;
             }
-        
-
             clearCanvas(ctx, canvas);
             resizeCanvas(canvas, window)
-            drawPlatforms(ctx, platformList, canvas);   
-            drawPlatform(ctx,0,canvas.height-50,canvas.width, 50, "darkblue");
+            drawPlatforms(ctx, platformList, canvas);
+      
             checkKeys(avatar, keys);
-            checkAvatarCollision(avatar, ctx);
-            updateAvatarValues(avatar,ctx);
+            updateAvatarValues(avatar,ctx, canvas);
             showStats(ctx, avatar, keys, fps)
             drawAvatar(ctx, avatar);
-            ctx.fillText(`CHRIS's WORLD (work in progress platformer)`, 400, 400);
             requestAnimationFrame(animate);
-            sleep10()
 
         }
 
-        const resizeCanvasEvent = () => resizeCanvas(canvas,window)
+        const resizeCanvasEvent = () => {
+            resizeCanvas(canvas,window)
+            drawPlatforms(ctx,platformList, canvas)
+            resizeAvatar(avatar, canvas)
+        }
         const handleKeyDownEvent = (event) => handleKeyDown(event, keys);
         const handleKeyUpEvent = (event) => handleKeyUp(event, keys);
 
@@ -60,6 +54,8 @@ const CanvasComponent = () => {
         window.addEventListener('keyup', handleKeyUpEvent);
 
         animate()
+    
+
 
         // Cleanup event listener on component unmount
         return () => {

@@ -1,19 +1,24 @@
 //all code to do with avatar
 
+import { act } from "react";
+
 export const createAvatar = (canvas) => ({
+    spawnX: canvas.width / 2 - 50,
+    spawnY: canvas.height - 150,
     x: canvas.width / 2 - 50,
-    y: canvas.height - 150,
-    width: 50,
-    height: 50,
+    y: canvas.height - 450,
+    width: canvas.width*0.05,
+    height: canvas.height*0.05,
     color: 'red',
     dx: 0,
     dy: 0,
     ax: 0,
-    ay: 0.3,
-    acc: 0.5,
+    ay: canvas.height*0.1,
+    acc: canvas.width*0.002,
+    gravity: canvas.height*0.001,
     friction: 0.92,
-    jumpStrength: -20  ,
-    maxFall: 5,
+    jumpStrength: -canvas.height*0.1  ,
+    jumpSpeed: -canvas.height*0.01,
     isFalling: false,
     isJumping: false,
     doubleJumped: false,
@@ -31,52 +36,89 @@ export const createAvatar = (canvas) => ({
 
 });
 
-export const updateAvatarValues = (avatar,ctx) => {
+export const resizeAvatar = (avatar, canvas) => {
+    console.log(canvas.width)
+    avatar.width = canvas.width*0.05
+    avatar.height = canvas.height*0.05
+    avatar.x = canvas.width / 2 - 50
+    avatar.y = canvas.height - 450
+
+}
+
+export const updateAvatarValues = (avatar,ctx, canvas) => {
     
     avatar.dx *= avatar.friction// Apply friction
     // Update horizontal movement
     avatar.dx += avatar.ax
 
+    //if bottom nothing fall
     if (!(avatar.BLy || avatar.BRy || avatar.BMy)){
         avatar.isFalling = true
     }
 
+    //if jump pressed try jump
     if (avatar.isJumping) {
         avatar.y += avatar.jumpStrength
         checkAvatarCollision(avatar,ctx)
-        avatar.dy = -5
-        avatar.isFalling = true
-        avatar.isJumping = false
-    }
-
-    if (avatar.isFalling) {
-        if (avatar.dy < avatar.maxFall) {
-            avatar.dy += avatar.ay
+        //if ceiling dont jump
+        if (avatar.TLy || avatar.TRy || avatar.BLy || avatar.BRy) {
+            avatar.y -= avatar.jumpStrength
+        } else {
+            avatar.dy = avatar.jumpSpeed
+            avatar.isFalling = true
         }
-        avatar.y += avatar.dy
+        avatar.isJumping = false
 
     }
 
-    
-    if (avatar.BLy || avatar.BRy || avatar.BMy) {
+    //if falling fall
+    if (avatar.isFalling) {
+            avatar.dy += avatar.gravity
+    }
+
+    avatar.y += avatar.dy
+    checkAvatarCollision(avatar, ctx)
+    //if bottom collision, land and reset jumps
+    if (avatar.BLy || avatar.BRy || avatar.BMy || avatar.y + avatar.height > canvas.height) {
+        avatar.y -= avatar.dy
         avatar.dy = 0
         avatar.isFalling = false
         avatar.isJumping = false
         avatar.doubleJumped = false
+    } else if (avatar.TLy || avatar.TRy) {
+        avatar.y -= avatar.dy
+
     } else {
         avatar.isFalling
     }
+    
 
-
+    // if collid with side stop x
+    avatar.x += avatar.dx
+    checkAvatarCollision(avatar, ctx)
     if (avatar.TLx || avatar.TRx || avatar.BLx || avatar.BRx){
-        avatar.dx = 0
-        avatar.ax = 0
-    }
-    else {
-        avatar.x += avatar.dx;
+        avatar.x -= avatar.dx 
+        avatar.dx += avatar.dx*-0.5
+
+        //find nearest non collision point
     }
 
+    //canvas boundaries
+    if (avatar.x < 0) {
+        avatar.x = 0
+    }
 
+    if (avatar.x + avatar.width > canvas.width) {
+        avatar.x = canvas.width - avatar.width
+    }
+
+    if (avatar.y < 0) {
+        avatar.y = 0
+    }
+
+    if (avatar.y + avatar.height > canvas.height) {
+        avatar.y = canvas.height - avatar.height
+    }
 
 
 }
@@ -84,32 +126,32 @@ export const updateAvatarValues = (avatar,ctx) => {
 export const checkAvatarCollision = (avatar, ctx) => {
     var x = avatar.x
     var y = avatar.y
-    var dy = avatar.dy
-    var dx = avatar.dx
-    var TLypixel = ctx.getImageData(x+dx , y+dy-5, 1, 1);
-    var TRypixel = ctx.getImageData(x+dx + avatar.width, y+dy-5, 1, 1);
-    var BLypixel = ctx.getImageData(x+dx, y + avatar.height+dy+5, 1, 1);
-    var BRypixel = ctx.getImageData(x+dx + avatar.width, y + avatar.height+dy+5, 1, 1);
-    var BMypixel = ctx.getImageData(x+dx+(avatar.width/2), y + avatar.height+dy+5, 1, 1);
+    var TLxpixel = ctx.getImageData(x-4 , y+5, 1, 1);
+    var TRxpixel = ctx.getImageData(x+4 + avatar.width, y+5, 1, 1);
+    var BLxpixel = ctx.getImageData(x-4, y + avatar.height-5, 1, 1);
+    var BRxpixel = ctx.getImageData(x+4 + avatar.width, y + avatar.height-5, 1, 1);
+    var BMxpixel = ctx.getImageData(x+(avatar.width/2), y + avatar.height-5, 1, 1);
 
-    var TLxpixel = ctx.getImageData(x+dx , y+dy, 1, 1);
-    var TRxpixel = ctx.getImageData(x+dx + avatar.width, y+dy, 1, 1);
-    var BLxpixel = ctx.getImageData(x+dx, y + avatar.height+dy, 1, 1);
-    var BRxpixel = ctx.getImageData(x+dx + avatar.width, y + avatar.height+dy, 1, 1);
-    var BMxpixel = ctx.getImageData(x+dx+(avatar.width/2), y + avatar.height+dy, 1, 1);
+    var TLypixel = ctx.getImageData(x , y-5, 1, 1);
+    var TRypixel = ctx.getImageData(x + avatar.width, y-5, 1, 1);
+    var BLypixel = ctx.getImageData(x, y + avatar.height+5, 1, 1);
+    var BRypixel = ctx.getImageData(x + avatar.width, y + avatar.height+5, 1, 1);
+    var BMypixel = ctx.getImageData(x+(avatar.width/2), y + avatar.height+5, 1, 1);
 
-    avatar.BLy = !(BLypixel.data[0] == 0 && BLypixel.data[1] == 0 && BLypixel.data[2] == 0)
-    avatar.BRy = !(BRypixel.data[0] == 0 && BRypixel.data[1] == 0 && BRypixel.data[2] == 0)
-    avatar.TLy = !(TLypixel.data[0] == 0 && TLypixel.data[1] == 0 && TLypixel.data[2] == 0)
-    avatar.TRy = !(TRypixel.data[0] == 0 && TRypixel.data[1] == 0 && TRypixel.data[2] == 0)
-    avatar.BMy = !(BMypixel.data[0] == 0 && BMypixel.data[1] == 0 && BMypixel.data[2] == 0)
     avatar.BLx = !(BLxpixel.data[0] == 0 && BLxpixel.data[1] == 0 && BLxpixel.data[2] == 0)
     avatar.BRx = !(BRxpixel.data[0] == 0 && BRxpixel.data[1] == 0 && BRxpixel.data[2] == 0)
     avatar.TLx = !(TLxpixel.data[0] == 0 && TLxpixel.data[1] == 0 && TLxpixel.data[2] == 0)
     avatar.TRx = !(TRxpixel.data[0] == 0 && TRxpixel.data[1] == 0 && TRxpixel.data[2] == 0)
     avatar.BMx = !(BMxpixel.data[0] == 0 && BMxpixel.data[1] == 0 && BMxpixel.data[2] == 0)
 
+    avatar.BLy = !(BLypixel.data[0] == 0 && BLypixel.data[1] == 0 && BLypixel.data[2] == 0)
+    avatar.BRy = !(BRypixel.data[0] == 0 && BRypixel.data[1] == 0 && BRypixel.data[2] == 0)
+    avatar.TLy = !(TLypixel.data[0] == 0 && TLypixel.data[1] == 0 && TLypixel.data[2] == 0)
+    avatar.TRy = !(TRypixel.data[0] == 0 && TRypixel.data[1] == 0 && TRypixel.data[2] == 0)
+    avatar.BMy = !(BMypixel.data[0] == 0 && BMypixel.data[1] == 0 && BMypixel.data[2] == 0)
+
 }
+
 
 
 export const checkKeys = (avatar, keys) => {
@@ -132,3 +174,4 @@ export const checkKeys = (avatar, keys) => {
         avatar.jumpDelay = false; // End delay for double jump
     }
 }
+
