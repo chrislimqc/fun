@@ -10,10 +10,37 @@ Door list:
 
 Doors can also be clicked on if user is lazy to play the game
 AND map should fit in square for mobile use
-As of (22/06/24) there are 0 doors and 0 links
+LOG:
+As of (22/06/24): there are 0 doors and 0 links
+
+As of (4/7/24):
+    still no doors but platform drawing and platform detection is done ish... 
+    now trying to fix the lag for the collision detection
+    and move on to implementing clickable surfaces
+    and also move onto navigating between pages
+    and also clean up code
+
+
 
 PRIORITY 
-abstract avatar and update components so i can start making seperate pages/maps
+add new maps when avatar goes to edge of map (created 7/7/24)
+add clickable link functionality (created 7/7/24)
+try host online and open on mobile (created 7/7/24)
+
+
+try to fix collision issue and why it is laggy (created 4/7/24) (DONE 7/7/24)
+also try to fix what happens to avatar when resize (DONE 7/7/24)
+
+
+
+
+
+
+
+
+
+abstract avatar and update components so i can start making seperate pages/maps -- ALL BELOW DONE (4/7/24)
+
 
 I need constants for platforms, doors and avatars
 I need functions for:
